@@ -10,24 +10,29 @@ sudo apt install ros-${ROS_DISTRO}-usb-cam-controllers ros-${ROS_DISTRO}-usb-cam
 sudo apt install ros-${ROS_DISTRO}-libuvc-ros
 ```
 
-- image_reprojection package (forked version)
+- image_reprojection and image_reprojection_plugins package 
 ```
-git clone https://github.com/dkobayashikdel/image_reprojection
-cd image_reprojection
-git fetch
-git checkout origin/fix-opencv-inpaint-on-melodic
+cd src
+git clone https://github.com/yoooch0614/image_reprojection.git
+git clone https://github.com/yoooch0614/image_reprojection_plugins.git
+
 ```
-
-and `catkin_make` .
-
+- aruco_ros packkage
+```
+git clone https://github.com/pal-robotics/aruco_ros.git
+```
+- ar_track_alvar packkage
+```
+git clone https://github.com/ros-perception/ar_track_alvar.git
+```
 
 ## Install
 clone this repository.
 ```
-git clone https://github.com/takubolab/asterisk_perception.git
+git clone https://github.com/yoooch0614/asterisk_perception.git
 ```
 
-and `catkin_make` .
+and `catkin build` .
 
 
 ## Usage
