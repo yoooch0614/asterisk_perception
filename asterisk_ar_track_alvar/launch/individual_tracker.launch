@@ -1,0 +1,40 @@
+<launch>
+    
+    <arg name="marker_size"             default="5.0" />    <!-- in centimeter -->
+    <arg name="max_new_marker_error"    default="0.05" />
+    <arg name="max_track_error"         default="0.2" />
+    <arg name="median_filter_size"      default="10" />
+    <arg name="max_frequency"           default="8.0" />
+    <arg name="marker_resolution"       default="5" />
+    <arg name="marker_margin"           default="2" />
+    <arg name="output_frame_from_msg"   default="false" />
+    
+    <arg name="camera_name"             default="camera" />
+    <arg name="camera_type"             default="rgb" doc="rgb or rgbd"/>
+    <arg name="image_topic"             default="$(arg camera_name)/image_raw" />
+    <arg name="cloud_topic"             default="$(arg camera_name)/depth_registered/points" />
+    <arg name="camera_info_topic"       default="$(arg camera_name)/camera_info" />
+    <arg name="output_frame"            default="$(arg camera_name)_frame" />
+    <arg name="node_name"               default="$(arg camera_name)_ar_track_alvar_individual_tracker" />
+    
+    
+    <node if="$(eval arg('camera_type') != 'rgbd')"
+        name="$(arg node_name)" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen">
+        <remap from="camera_image"          to="$(arg image_topic)" />
+        <remap from="camera_info"           to="$(arg camera_info_topic)" />
+        <param name="marker_size"           value="$(arg marker_size)" />
+        <param name="max_new_marker_error"  value="$(arg max_new_marker_error)" />
+        <param name="max_track_error"       value="$(arg max_track_error)" />
+        <param name="output_frame"          value="$(arg output_frame)" />
+    </node>
+    <node if="$(eval arg('camera_type') == 'rgbd')"
+        name="$(arg node_name)" pkg="ar_track_alvar" type="individualMarkers" respawn="false" output="screen">
+        <remap from="camera_image"          to="$(arg cloud_topic)" />
+        <remap from="camera_info"           to="$(arg camera_info_topic)" />
+        <param name="marker_size"           value="$(arg marker_size)" />
+        <param name="max_new_marker_error"  value="$(arg max_new_marker_error)" />
+        <param name="max_track_error"       value="$(arg max_track_error)" />
+        <param name="output_frame"          value="$(arg output_frame)" />
+    </node>
+    
+</launch>
