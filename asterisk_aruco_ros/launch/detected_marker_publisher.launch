@@ -1,0 +1,40 @@
+<launch>
+    
+    <arg name="marker_size"         default="0.034" />  <!-- in metre -->
+    <arg name="min_marker_size"     default="0.015" />  <!-- in metre -->
+    <arg name="max_marker_size"     default="0.08" />   <!-- in metre -->
+    <arg name="camera_name"         default="camera" />
+    <arg name="image_topic"         default="$(arg camera_name)/image" />
+    <arg name="camera_info_topic"   default="$(arg camera_name)/camera_info" />
+    <arg name="reference_frame"     default="base_link" />  <!-- leave empty and the pose will be published wrt param parent_name -->
+    <arg name="camera_frame"        default="$(arg camera_name)_frame" />
+    <arg name="marker_frame"        default="marker$(arg marker_id)_$(arg camera_name)_frame" />
+    <arg name="corner_refinement"   default="LINES" />  <!-- NONE, HARRIS, LINES, SUBPIX -->
+    <arg name="threshold_method"    default="ADPT_THRES" /> <!-- FIXED_THRES, ADPT_THRES, CANNY -->
+    <arg name="image_is_rectified"  default="true" />
+    <arg name="rotate_marker_axis"  default="true" />
+    <arg name="threshold_param_1"   default="7" />
+    <arg name="threshold_param_2"   default="7" />
+    <arg name="use_camera_info"     default="true" />
+    <arg name="allow_marker_duplication"  default="true" />
+    <arg name="node_name"           default="$(arg camera_name)_aruco_detected_marker_publisher" />
+    
+    
+    <node name="$(arg node_name)" pkg="aruco_ros" type="marker_publisher">
+        <remap from="image"                 to="$(arg image_topic)" />
+        <remap from="camera_info"           to="$(arg camera_info_topic)" />
+        <param name="marker_size"           value="$(arg marker_size)" />
+        <param name="reference_frame"       value="$(arg reference_frame)" />   <!-- frame in which the marker pose will be refered -->
+        <param name="camera_frame"          value="$(arg camera_frame)" />
+        <param name="marker_frame"          value="$(arg marker_frame)" />
+        <param name="corner_refinement"     value="$(arg corner_refinement)" />
+        <param name="threshold_method"      value="$(arg threshold_method)" />
+        <param name="image_is_rectified"    value="$(arg image_is_rectified)" />
+        <param name="rotate_marker_axis"    value="$(arg rotate_marker_axis)" />
+        <param name="threshold_param_1"     value="$(arg threshold_param_1)" />
+        <param name="threshold_param_2"     value="$(arg threshold_param_2)" />
+        <param name="allow_marker_duplication"  value="$(arg allow_marker_duplication)" />
+        <param name="use_camera_info"       value="$(arg use_camera_info)" />
+    </node>
+    
+</launch>

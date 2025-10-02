@@ -1,0 +1,17 @@
+<launch>
+  
+  <arg name="camera_name" default="camera" />
+  <arg name="frame_id" default="camera_frame" />
+  <arg name="set_camera_info_service" default="$(arg camera_name)/set_camera_info" />
+  <arg name="camera_info_url" default="package://asterisk_camera_omnidirectional/camera_info/pinhole_camera.yaml" />
+  
+  
+  <node name="camera_info_setter" pkg="asterisk_camera_omnidirectional" type="camera_info_setter">
+    <param name="camera_name" value="$(arg camera_name)" />
+    <param name="frame_id" value="$(arg frame_id)" />
+    <param name="camera_info_url" value="$(arg camera_info_url)" />
+    <param name="set_camera_info_service" value="$(arg set_camera_info_service)" />
+  </node>
+  
+</launch>
+  

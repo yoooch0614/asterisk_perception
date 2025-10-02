@@ -1,0 +1,106 @@
+<launch>
+    
+    <arg name="node_name"                   default="single_marker_detector" />
+    
+    <arg name="marker_id"                   default="26" />
+    <arg name="marker_size"                 default="0.050" />  <!-- in metre -->
+    <arg name="corner_refinement"           default="LINES" />  <!-- NONE, HARRIS, LINES, SUBPIX -->
+    <arg name="image_is_rectified"          default="true" />
+    <arg name="rotate_marker_axis"          default="true" />
+    
+    <arg name="camera1_name"                default="camera1" />
+    <arg name="camera2_name"                default="camera2" />
+    <arg name="camera3_name"                default="camera3" />
+    <arg name="camera4_name"                default="camera4" />
+    <arg name="camera1_image_topic"         default="color/image_raw" />
+    <arg name="camera1_camera_info_topic"   default="color/camera_info" />
+    <arg name="camera2_image_topic"         default="color/image_raw" />
+    <arg name="camera2_camera_info_topic"   default="color/camera_info" />
+    <arg name="camera3_image_topic"         default="color/image_raw" />
+    <arg name="camera3_camera_info_topic"   default="color/camera_info" />
+    <arg name="camera4_image_topic"         default="color/image_raw" />
+    <arg name="camera4_camera_info_topic"   default="color/camera_info" />
+    <arg name="camera1_frame"               default="$(arg camera1_name)_color_optical_frame" />    <!-- leave empty and the pose will be published wrt param parent_name -->
+    <arg name="camera2_frame"               default="$(arg camera2_name)_color_optical_frame" />    <!-- leave empty and the pose will be published wrt param parent_name -->
+    <arg name="camera3_frame"               default="$(arg camera3_name)_color_optical_frame" />    <!-- leave empty and the pose will be published wrt param parent_name -->
+    <arg name="camera4_frame"               default="$(arg camera4_name)_color_optical_frame" />    <!-- leave empty and the pose will be published wrt param parent_name -->
+    <arg name="marker_frame_prefix"         default="marker" />
+    <!-- <arg mame="marker_frame_prefix"    default="marker(arg marker_id)" /> -->
+    
+    <arg name="use_common_reference_frame"  default="true" />
+    <arg name="reference_frame"             default="map" />    <!-- leave empty and the pose will be published wrt param parent_name -->
+    <arg name="camera1_reference_frame"     default="$(arg reference_frame)"       if="$(arg use_common_reference_frame)" />
+    <arg name="camera1_reference_frame"     default="$(arg camera1_name)_link" unless="$(arg use_common_reference_frame)" />
+    <arg name="camera2_reference_frame"     default="$(arg reference_frame)"       if="$(arg use_common_reference_frame)" />
+    <arg name="camera2_reference_frame"     default="$(arg camera2_name)_link" unless="$(arg use_common_reference_frame)" />
+    <arg name="camera3_reference_frame"     default="$(arg reference_frame)"       if="$(arg use_common_reference_frame)" />
+    <arg name="camera3_reference_frame"     default="$(arg camera3_name)_link" unless="$(arg use_common_reference_frame)" />
+    <arg name="camera4_reference_frame"     default="$(arg reference_frame)"       if="$(arg use_common_reference_frame)" />
+    <arg name="camera4_reference_frame"     default="$(arg camera4_name)_link" unless="$(arg use_common_reference_frame)" />
+    
+    
+    <!-- camera1 -->
+    <group ns="$(arg camera1_name)">
+        <node name="$(arg node_name)" pkg="aruco_ros" type="single">
+            <remap from="image"                 to="$(arg camera1_image_topic)" />
+            <remap from="camera_info"           to="$(arg camera1_camera_info_topic)" />
+            <param name="marker_size"           value="$(arg marker_size)" />
+            <param name="marker_id"             value="$(arg marker_id)" />
+            <param name="camera_frame"          value="$(arg camera1_frame)" />
+            <param name="marker_frame"          value="$(arg marker_frame_prefix)_$(arg camera1_name)_frame" />
+            <param name="reference_frame"       value="$(arg camera1_reference_frame)" />   <!-- frame in which the marker pose will be refered -->
+            <param name="corner_refinement"     value="$(arg corner_refinement)" />
+            <param name="image_is_rectified"    value="$(arg image_is_rectified)" />
+            <param name="rotate_marker_axis"    value="$(arg rotate_marker_axis)" />
+        </node>
+    </group>
+    
+    <!-- camera2 -->
+    <group ns="$(arg camera2_name)">
+        <node name="$(arg node_name)" pkg="aruco_ros" type="single">
+            <remap from="image"                 to="$(arg camera2_image_topic)" />
+            <remap from="camera_info"           to="$(arg camera2_camera_info_topic)" />
+            <param name="marker_size"           value="$(arg marker_size)" />
+            <param name="marker_id"             value="$(arg marker_id)" />
+            <param name="camera_frame"          value="$(arg camera2_frame)" />
+            <param name="marker_frame"          value="$(arg marker_frame_prefix)_$(arg camera2_name)_frame" />
+            <param name="reference_frame"       value="$(arg camera2_reference_frame)" />   <!-- frame in which the marker pose will be refered -->
+            <param name="corner_refinement"     value="$(arg corner_refinement)" />
+            <param name="image_is_rectified"    value="$(arg image_is_rectified)" />
+            <param name="rotate_marker_axis"    value="$(arg rotate_marker_axis)" />
+        </node>
+    </group>
+    
+    <!-- camera3 -->
+    <group ns="$(arg camera3_name)">
+        <node name="$(arg node_name)" pkg="aruco_ros" type="single">
+            <remap from="image"                 to="$(arg camera3_image_topic)" />
+            <remap from="camera_info"           to="$(arg camera3_camera_info_topic)" />
+            <param name="marker_size"           value="$(arg marker_size)" />
+            <param name="marker_id"             value="$(arg marker_id)" />
+            <param name="camera_frame"          value="$(arg camera3_frame)" />
+            <param name="marker_frame"          value="$(arg marker_frame_prefix)_$(arg camera3_name)_frame" />
+            <param name="reference_frame"       value="$(arg camera3_reference_frame)" />   <!-- frame in which the marker pose will be refered -->
+            <param name="corner_refinement"     value="$(arg corner_refinement)" />
+            <param name="image_is_rectified"    value="$(arg image_is_rectified)" />
+            <param name="rotate_marker_axis"    value="$(arg rotate_marker_axis)" />
+        </node>
+    </group>
+    
+    <!-- camera4 -->
+    <group ns="$(arg camera4_name)">
+        <node name="$(arg node_name)" pkg="aruco_ros" type="single">
+            <remap from="image"                 to="$(arg camera4_image_topic)" />
+            <remap from="camera_info"           to="$(arg camera4_camera_info_topic)" />
+            <param name="marker_size"           value="$(arg marker_size)" />
+            <param name="marker_id"             value="$(arg marker_id)" />
+            <param name="camera_frame"          value="$(arg camera4_frame)" />
+            <param name="marker_frame"          value="$(arg marker_frame_prefix)_$(arg camera4_name)_frame" />
+            <param name="reference_frame"       value="$(arg camera4_reference_frame)" />   <!-- frame in which the marker pose will be refered -->
+            <param name="corner_refinement"     value="$(arg corner_refinement)" />
+            <param name="image_is_rectified"    value="$(arg image_is_rectified)" />
+            <param name="rotate_marker_axis"    value="$(arg rotate_marker_axis)" />
+        </node>
+    </group>
+    
+</launch>

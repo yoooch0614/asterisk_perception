@@ -1,0 +1,101 @@
+<launch>
+  
+  <arg name="fish_eye_front_camera_name" default="fish_eye_front_camera" />
+  <arg name="fish_eye_front_camera_link" default="$(arg fish_eye_front_camera_name)_link" />
+  <arg name="fish_eye_front_camera_optical_frame" default="$(arg fish_eye_front_camera_name)_optical_frame" />
+  <arg name="fish_eye_back_camera_name" default="fish_eye_back_camera" />
+  <arg name="fish_eye_back_camera_link" default="$(arg fish_eye_back_camera_name)_link" />
+  <arg name="fish_eye_back_camera_optical_frame" default="$(arg fish_eye_back_camera_name)_optical_frame" />
+  <arg name="pov_camera_name" default="pov_camera" />
+  <arg name="pov_camera_link" default="$(arg pov_camera_name)_link" />
+  <arg name="pov_camera_optical_frame" default="$(arg pov_camera_name)_optical_frame" />
+  <arg name="pan" default="0.0" />
+  <arg name="tilt" default="0.0" />
+  <arg name="roll" default="0.0" />
+  
+  <arg name="fish_eye_front_camera_set_camera_info_service" default="$(arg fish_eye_front_camera_name)/set_camera_info" />
+  <arg name="fish_eye_front_camera_camera_info_url" default="package://asterisk_camera_omnidirectional/camera_info/insta360_front.yaml" />
+  <arg name="fish_eye_back_camera_set_camera_info_service" default="$(arg fish_eye_back_camera_name)/set_camera_info" />
+  <arg name="fish_eye_back_camera_camera_info_url" default="package://asterisk_camera_omnidirectional/camera_info/insta360_back.yaml" />
+  
+  
+  <node name="fish_eye_front_camera_info_setter" pkg="asterisk_camera_omnidirectional" type="camera_info_setter">
+    <param name="camera_name" value="$(arg fish_eye_front_camera_name)" />
+    <param name="frame_id" value="$(arg fish_eye_front_camera_optical_frame)" />
+    <param name="camera_info_url" value="$(arg fish_eye_front_camera_camera_info_url)" />
+    <param name="set_camera_info_service" value="$(arg fish_eye_front_camera_set_camera_info_service)" />
+  </node>
+  
+  <node name="fish_eye_back_camera_info_setter" pkg="asterisk_camera_omnidirectional" type="camera_info_setter">
+    <param name="camera_name" value="$(arg fish_eye_back_camera_name)" />
+    <param name="frame_id" value="$(arg fish_eye_back_camera_optical_frame)" />
+    <param name="camera_info_url" value="$(arg fish_eye_back_camera_camera_info_url)" />
+    <param name="set_camera_info_service" value="$(arg fish_eye_back_camera_set_camera_info_service)" />
+  </node>
+  
+  <node name="$(arg pov_camera_name)_frame_publisher" pkg="tf" type="static_transform_publisher"
+        args="0 0 0 -1.570796 0 -1.570796 $(arg pov_camera_link) $(arg pov_camera_optical_frame) 100" output="screen" />
+  
+  <node name="$(arg pov_camera_name)_tf" pkg="tf" type="static_transform_publisher"
+        args="0 0 0 $(arg pan) $(arg tilt) $(arg roll) $(arg fish_eye_front_camera_link) $(arg pov_camera_link) 100" output="screen" />
+  
+  <node name="sphere_surface_publisher" pkg="image_reprojection_plugins" type="static_sphere_publisher" output="screen">
+    <remap from="sphere" to="sphere_surface" />
+    <rosparam subst_value="true">
+      frame_id: $(arg pov_camera_optical_frame)
+      center: [0., 0., 0.]
+      radius: 1.
+    </rosparam>
+  </node>
+  
+  <node name="$(arg pov_camera_name)_driver" pkg="nodelet" type="nodelet" 
+        args="standalone image_reprojection/ImageReprojection" output="screen">
+    <remap from="src_image0" to="$(arg fish_eye_front_camera_name)/image" />
+    <rosparam ns="src_camera0">
+      model: image_reprojection_plugins/FisheyeCameraModel
+      fov: 3.141592
+      image_transport: raw
+      <!-- image_transport: compressed -->
+    </rosparam>
+    
+    <remap from="src_image1" to="$(arg fish_eye_back_camera_name)/image" />
+    <rosparam ns="src_camera1">
+      model: image_reprojection_plugins/FisheyeCameraModel
+      fov: 3.141592
+      image_transport: raw
+      <!-- image_transport: compressed -->
+    </rosparam>
+    
+    <remap from="surface" to="sphere_surface" />
+    <rosparam ns="surface">
+      model: image_reprojection_plugins/SphereSurfaceModel
+    </rosparam>
+    
+    <remap from="dst_image" to="$(arg pov_camera_name)/image" />
+    <rosparam ns="dst_camera" subst_value="true">
+      frame_id: $(arg pov_camera_optical_frame)
+      model: image_reprojection_plugins/PinholeCameraModel
+      info_file: $(find asterisk_camera_omnidirectional)/camera_info/pinhole_camera.yaml
+    </rosparam>
+    
+    <rosparam ns="map_update">
+      background: true
+      frequency: 30
+      binning_x: 16
+      binning_y: 16
+    </rosparam>
+  </node>
+  
+  <node name="pov_camera_viewer" pkg="rqt_image_view" type="rqt_image_view" />
+  
+  <!-- <node pkg="tf" type="tf_remap" name="tf_remapper" output="screen">
+    <rosparam param="mappings" subst_value="true">
+      [{old: pinhole_camera, new: $(arg pov_camera_name)_frame},{old: flipped_pinhole_camera, new: flipped_$(arg pov_camera_name)_frame}]
+    </rosparam>
+  </node> -->
+  
+  <!-- <node name="virtual_camera_visualizer" pkg="rviz" type="rviz"
+        args="-d $(find asterisk_camera_omnidirectional)/config/camera_pov_insta360_debug.rviz" output="screen">
+  </node> -->
+  
+</launch>

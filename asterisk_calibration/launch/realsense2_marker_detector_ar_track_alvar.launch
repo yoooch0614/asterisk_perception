@@ -1,0 +1,92 @@
+<launch>
+    
+    <arg name="node_name"                   default="ar_track_alvar_bundle_tracker" />
+    
+    <arg name="marker_size"                 default="5.0" />    <!-- in centimeter -->
+    <arg name="max_new_marker_error"        default="0.05" />
+    <arg name="max_track_error"             default="0.2" />
+    <arg name="median_filter_size"          default="10" />
+    
+    <arg name="camera_type"                 default="rgb" doc="rgb or rgbd"/>
+    <arg name="camera1_name"                default="camera1" />
+    <arg name="camera2_name"                default="camera2" />
+    <arg name="camera3_name"                default="camera3" />
+    <arg name="camera4_name"                default="camera4" />
+    <arg name="camera1_image_topic"         default="color/image_raw" />
+    <arg name="camera1_cloud_topic"         default="depth/color/points" />
+    <arg name="camera1_camera_info_topic"   default="color/camera_info" />
+    <arg name="camera2_image_topic"         default="color/image_raw" />
+    <arg name="camera2_cloud_topic"         default="depth/color/points" />
+    <arg name="camera2_camera_info_topic"   default="color/camera_info" />
+    <arg name="camera3_image_topic"         default="color/image_raw" />
+    <arg name="camera3_cloud_topic"         default="depth/color/points" />
+    <arg name="camera3_camera_info_topic"   default="color/camera_info" />
+    <arg name="camera4_image_topic"         default="color/image_raw" />
+    <arg name="camera4_cloud_topic"         default="depth/color/points" />
+    <arg name="camera4_camera_info_topic"   default="color/camera_info" />
+    
+    <arg name="use_common_reference_frame"  default="true" />
+    <arg name="reference_frame"             default="map" />
+    <arg name="camera1_reference_frame"     default="$(arg reference_frame)"       if="$(arg use_common_reference_frame)" />
+    <arg name="camera1_reference_frame"     default="$(arg camera1_name)_link" unless="$(arg use_common_reference_frame)" />
+    <arg name="camera2_reference_frame"     default="$(arg reference_frame)"       if="$(arg use_common_reference_frame)" />
+    <arg name="camera2_reference_frame"     default="$(arg camera2_name)_link" unless="$(arg use_common_reference_frame)" />
+    <arg name="camera3_reference_frame"     default="$(arg reference_frame)"       if="$(arg use_common_reference_frame)" />
+    <arg name="camera3_reference_frame"     default="$(arg camera3_name)_link" unless="$(arg use_common_reference_frame)" />
+    <arg name="camera4_reference_frame"     default="$(arg reference_frame)"       if="$(arg use_common_reference_frame)" />
+    <arg name="camera4_reference_frame"     default="$(arg camera4_name)_link" unless="$(arg use_common_reference_frame)" />
+    
+    <arg name="bundle_file_directory"       default="$(find asterisk_ar_track_alvar)/config/bundle" />
+    <arg name="bundle_file_names"           default="single_01.xml single_02.xml single_03.xml single_04.xml single_05.xml single_06.xml" />
+    <arg name="bundle_file_list"            default="$(eval arg('bundle_file_directory') + '/' + (' ' + arg('bundle_file_directory') + '/').join(arg('bundle_file_names').strip().split(' ')))" />
+    
+    
+    <!-- camera1 -->
+    <group ns="$(arg camera1_name)">
+        <node if="$(eval arg('camera_type') != 'rgbd')"
+            name="$(arg node_name)" pkg="ar_track_alvar" type="findMarkerBundlesNoKinect" respawn="false" output="screen"
+            args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg camera1_image_topic) $(arg camera1_camera_info_topic) $(arg camera1_reference_frame) $(arg bundle_file_list)"
+        />
+        <node if="$(eval arg('camera_type') == 'rgbd')"
+            name="$(arg node_name)" pkg="ar_track_alvar" type="findMarkerBundles" respawn="false" output="screen"
+            args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg camera1_cloud_topic) $(arg camera1_camera_info_topic) $(arg camera1_reference_frame) $(arg median_filter_size) $(arg bundle_file_list)"
+        />
+    </group>
+    
+    <!-- camera2 -->
+    <group ns="$(arg camera2_name)">
+        <node if="$(eval arg('camera_type') != 'rgbd')"
+            name="$(arg node_name)" pkg="ar_track_alvar" type="findMarkerBundlesNoKinect" respawn="false" output="screen"
+            args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg camera2_image_topic) $(arg camera2_camera_info_topic) $(arg camera2_reference_frame) $(arg bundle_file_list)"
+        />
+        <node if="$(eval arg('camera_type') == 'rgbd')"
+            name="$(arg node_name)" pkg="ar_track_alvar" type="findMarkerBundles" respawn="false" output="screen"
+            args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg camera2_cloud_topic) $(arg camera2_camera_info_topic) $(arg camera2_reference_frame) $(arg median_filter_size) $(arg bundle_file_list)"
+        />
+    </group>
+    
+    <!-- camera3 -->
+    <group ns="$(arg camera3_name)">
+        <node if="$(eval arg('camera_type') != 'rgbd')"
+            name="$(arg node_name)" pkg="ar_track_alvar" type="findMarkerBundlesNoKinect" respawn="false" output="screen"
+            args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg camera3_image_topic) $(arg camera3_camera_info_topic) $(arg camera3_reference_frame) $(arg bundle_file_list)"
+        />
+        <node if="$(eval arg('camera_type') == 'rgbd')"
+            name="$(arg node_name)" pkg="ar_track_alvar" type="findMarkerBundles" respawn="false" output="screen"
+            args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg camera3_cloud_topic) $(arg camera3_camera_info_topic) $(arg camera3_reference_frame) $(arg median_filter_size) $(arg bundle_file_list)"
+        />
+    </group>
+    
+    <!-- camera4 -->
+    <group ns="$(arg camera4_name)">
+        <node if="$(eval arg('camera_type') != 'rgbd')"
+            name="$(arg node_name)" pkg="ar_track_alvar" type="findMarkerBundlesNoKinect" respawn="false" output="screen"
+            args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg camera4_image_topic) $(arg camera4_camera_info_topic) $(arg camera4_reference_frame) $(arg bundle_file_list)"
+        />
+        <node if="$(eval arg('camera_type') == 'rgbd')"
+            name="$(arg node_name)" pkg="ar_track_alvar" type="findMarkerBundles" respawn="false" output="screen"
+            args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg camera4_cloud_topic) $(arg camera4_camera_info_topic) $(arg camera4_reference_frame) $(arg median_filter_size) $(arg bundle_file_list)"
+        />
+    </group>
+    
+</launch>

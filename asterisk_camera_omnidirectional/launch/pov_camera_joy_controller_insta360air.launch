@@ -1,0 +1,162 @@
+<launch>
+  
+  <!-- image_reprojection parameters  -->
+  <arg name="video_device" default="/dev/v4l/by-id/usb-Arashi_Vision_Insta360_Air-video-index0" />
+  <arg name="vendor" default="0x2e1a" />
+  <arg name="product" default="0x1000" />
+  <arg name="index" default="0" />
+  <arg name="image_width" default="3008" />
+  <arg name="image_height" default="1504" />
+  <!-- <arg name="image_width" default="1472" /> -->
+  <!-- <arg name="image_height" default="736" /> -->
+  <arg name="pixel_format" default="mjpeg" />
+  <arg name="frame_rate" default="30" />
+  <arg name="camera_name" default="camera" />
+  <arg name="pov_camera_name" default="pov_camera" />
+  
+  <!-- pov_camera_joy_controller parameters -->
+  <arg name="frequency" default="100.0" />
+  <arg name="pov_camera_frame" default="flipped_pov_camera" />
+  <arg name="camera_frame" default="camera/flipped_front" />
+  <arg name="use_cross" default="false" />
+  <arg name="pan_reverse" default="false" />
+  <arg name="pan_init" default="0.0" />
+  <arg name="pan_velocity" default="$(eval pi / 5.0)" />
+  <arg name="tilt_reverse" default="false" />
+  <arg name="tilt_init" default="0.0" />
+  <arg name="tilt_velocity" default="$(eval pi / 8.0)" />
+  <arg name="roll_reverse" default="false" />
+  <arg name="roll_init" default="0.0" />
+  <arg name="roll_velocity" default="$(eval pi / 8.0)" />
+  
+  
+  <include file="$(find asterisk_camera_omnidirectional)/launch/usb_cam_hardware_mjpeg.launch">
+    <arg name="video_device" value="$(arg video_device)" />
+    <arg name="image_width" value="$(arg image_width)" />
+    <arg name="image_height" value="$(arg image_height)" />
+    <arg name="pixel_format" value="$(arg pixel_format)" />
+    <arg name="frame_rate" value="$(arg frame_rate)" />
+    <arg name="camera_name" value="$(arg camera_name)" />
+  </include>
+  
+  <!-- <node name="$(arg camera_name)_driver" pkg="usb_cam" type="usb_cam_node">
+    <remap from="~image_raw" to="$(arg camera_name)/image"/>
+    <param name="video_device" value="$(arg video_device)" />
+    <param name="image_width" value="$(arg image_width)" />
+    <param name="image_height" value="$(arg image_height)" />
+    <param name="pixel_format" value="$(arg pixel_format)" />
+    <param name="camera_name" value="$(arg camera_name)"/>
+    <param name="camera_frame_id" value="$(arg camera_name)"/>
+  </node> -->
+  
+  <!-- <node name="$(arg camera_name)_driver" pkg="libuvc_camera" type="camera_node">
+    <remap from="image_raw" to="$(arg camera_name)/image"/>
+    <param name="vendor" value="$(arg vendor)" />
+    <param name="product" value="$(arg product)" />
+    <param name="index" value="$(arg index)" />
+    <param name="width" value="$(arg image_width)" />
+    <param name="height" value="$(arg image_height)" />
+    <param name="video_mode" value="$(arg pixel_format)" />
+    <param name="frame_rate" value="$(arg frame_rate)" />
+    <param name="frame_id" value="$(arg camera_name)" />
+    <param name="auto_white_balance" value="true" />
+  </node> -->
+  
+  <node name="$(arg camera_name)_splitter" pkg="nodelet" type="nodelet"
+        args="standalone image_reprojection_plugins/DualFisheyeSplitter" output="screen">
+    <remap from="image" to="$(arg camera_name)/image" />
+    <remap from="left/image" to="$(arg camera_name)/front/image" />
+    <remap from="right/image" to="$(arg camera_name)/back/image" />
+    <rosparam ns="left" subst_value="true">
+      frame_id: $(arg camera_name)/front
+      camera_name: insta360_front
+      camera_info_url: package://asterisk_camera_omnidirectional/camera_info/insta360_front.yaml
+    </rosparam>
+    <rosparam ns="right" subst_value="true">
+      frame_id: $(arg camera_name)/back
+      camera_name: insta360_back
+      camera_info_url: package://asterisk_camera_omnidirectional/camera_info/insta360_back.yaml
+    </rosparam>
+  </node>
+  
+  <node name="$(arg camera_name)_front_to_back" pkg="tf" type="static_transform_publisher"
+        args="0.0 0.0 0.0 0.0 3.141592 0.0 $(arg camera_name)/front $(arg camera_name)/back 100" output="screen" />
+  <node name="$(arg camera_name)_front_to_flipped" pkg="tf" type="static_transform_publisher"
+        args="0 0 0 1.570796 -1.570796 0 $(arg camera_name)/front $(arg camera_name)/flipped_front 100" output="screen" />
+  <node name="$(arg pov_camera_name)_to_flipped" pkg="tf" type="static_transform_publisher"
+        args="0 0 0 -1.570796 0 -1.570796 flipped_$(arg pov_camera_name) $(arg pov_camera_name) 100" output="screen" />
+  
+  <node name="$(arg pov_camera_name)_joy_controller" pkg="asterisk_camera_omnidirectional" type="pov_camera_joy_controller">
+    <param name="frequency" value="$(arg frequency)" />
+    <param name="pov_camera_frame" value="flipped_$(arg pov_camera_name)" />
+    <param name="camera_frame" value="$(arg camera_name)/flipped_front" />
+    <param name="use_cross" value="$(arg use_cross)" />
+    <param name="pan/reverse" value="$(arg pan_reverse)" />
+    <param name="pan/init" value="$(arg pan_init)" />
+    <param name="pan/velocity" value="$(arg pan_velocity)" />
+    <param name="tilt/reverse" value="$(arg tilt_reverse)" />
+    <param name="tilt/init" value="$(arg tilt_init)" />
+    <param name="tilt/velocity" value="$(arg tilt_velocity)" />
+    <param name="roll/reverse" value="$(arg roll_reverse)" />
+    <param name="roll/init" value="$(arg roll_init)" />
+    <param name="roll/velocity" value="$(arg roll_velocity)" />
+  </node>
+  
+  <node name="sphere_surface_publisher" pkg="image_reprojection_plugins" type="static_sphere_publisher" output="screen">
+    <remap from="sphere" to="sphere_surface" />
+    <rosparam subst_value="true">
+      frame_id: $(arg pov_camera_name)
+      center: [0., 0., 0.]
+      radius: 1.
+    </rosparam>
+  </node>
+  
+  <node name="$(arg pov_camera_name)_driver" pkg="nodelet" type="nodelet" 
+        args="standalone image_reprojection/ImageReprojection" output="screen">
+    <remap from="src_image0" to="$(arg camera_name)/front/image" />
+    <rosparam ns="src_camera0">
+      model: image_reprojection_plugins/FisheyeCameraModel
+      fov: 3.141592
+      image_transport: raw
+      <!-- image_transport: compressed -->
+    </rosparam>
+    
+    <remap from="src_image1" to="$(arg camera_name)/back/image" />
+    <rosparam ns="src_camera1">
+      model: image_reprojection_plugins/FisheyeCameraModel
+      fov: 3.141592
+      image_transport: raw
+      <!-- image_transport: compressed -->
+    </rosparam>
+    
+    <remap from="surface" to="sphere_surface" />
+    <rosparam ns="surface">
+      model: image_reprojection_plugins/SphereSurfaceModel
+    </rosparam>
+    
+    <remap from="dst_image" to="$(arg pov_camera_name)/image" />
+    <rosparam ns="dst_camera" subst_value="true">
+      frame_id: $(arg pov_camera_name)
+      model: image_reprojection_plugins/PinholeCameraModel
+      info_file: $(find asterisk_camera_omnidirectional)/camera_info/pinhole_camera.yaml
+    </rosparam>
+    
+    <rosparam ns="map_update">
+      background: true
+      frequency: 30
+      binning_x: 16
+      binning_y: 16
+    </rosparam>
+  </node>
+  
+  <!-- <node pkg="tf" type="tf_remap" name="tf_remapper" output="screen">
+    <rosparam param="mappings" subst_value="true">
+      [{old: pinhole_camera, new: $(arg pov_camera_name)_frame},{old: flipped_pinhole_camera, new: flipped_$(arg pov_camera_name)_frame}]
+    </rosparam>
+  </node> -->
+  
+  <!-- <node name="virtual_camera_visualizer" pkg="rviz" type="rviz"
+        args="-d $(find asterisk_camera_omnidirectional)/config/camera_pov_insta360_debug.rviz" output="screen">
+  </node> -->
+  
+</launch>

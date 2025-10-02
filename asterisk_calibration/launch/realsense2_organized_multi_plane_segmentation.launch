@@ -1,0 +1,192 @@
+<launch>
+    
+    <arg name="camera1_name"                                default="camera1" />
+    <arg name="camera2_name"                                default="camera2" />
+    <arg name="camera3_name"                                default="camera3" />
+    <arg name="camera4_name"                                default="camera4" />
+    <arg name="camera1_cloud_topic"                         default="depth/color/points" />
+    <arg name="camera2_cloud_topic"                         default="depth/color/points" />
+    <arg name="camera3_cloud_topic"                         default="depth/color/points" />
+    <arg name="camera4_cloud_topic"                         default="depth/color/points" />
+    
+    <arg name="node_name"                                   default="organized_multi_plane_segmentation" />
+    <arg name="estimate_normal"                             default="true" />
+    <arg name="publish_normal"                              default="false" />
+    <arg name="max_depth_change_factor"                     default="0.02" />
+    <arg name="normal_smoothing_size"                       default="20.0" />
+    <arg name="depth_dependent_smoothing"                   default="false" />
+    <arg name="estimation_method"                           default="1" doc="AVERAGE_3D_GRADIENT(0), COVARIANCE_MATRIX(1) and AVERAGE_DEPTH_CHANGE(2)" />
+    <arg name="border_policy_ignore"                        default="true" />
+    <arg name="min_size"                                    default="2000" />
+    <arg name="angular_threshold"                           default="0.05" />
+    <arg name="max_curvature"                               default="0.001" />
+    <arg name="connect_plane_angle_threshold"               default="0.2" />
+    <arg name="connect_distance_threshold"                  default="0.01" />
+    <arg name="ransac_refine_coefficients"                  default="true" />
+    <arg name="ransac_refine_outlier_distance_threshold"    default="0.1" />
+    <arg name="min_refined_area_threshold"                  default="0.04" />
+    <arg name="max_refined_area_threshold"                  default="10000" />
+    
+    <arg name="visualize_norm"                              default="true" />
+    
+    <arg name="use_external_manager"                        default="false"/>
+    <arg name="manager_name"                                default="organized_multi_plane_segmentation_manager" unless="$(arg use_external_manager)" />
+    <arg name="manager_name"                                default="realsense2_camera_manager"                      if="$(arg use_external_manager)" />
+    <arg name="camera1_manager_name"                        default="$(arg manager_name)" />
+    <arg name="camera2_manager_name"                        default="$(arg manager_name)" />
+    <arg name="camera3_manager_name"                        default="$(arg manager_name)" />
+    <arg name="camera4_manager_name"                        default="$(arg manager_name)" />
+    
+    <arg name="always_subscribe"                            default="true" />
+    <arg name="verbose_connection"                          default="false" />
+    
+    
+    <!-- camera1 -->
+    <group ns="$(arg camera1_name)">
+        <node unless="$(arg use_external_manager)" name="$(arg camera1_manager_name)" pkg="nodelet" type="nodelet" args="manager" />
+        
+        <node name="$(arg node_name)" pkg="nodelet" type="nodelet"
+            args="load jsk_pcl/OrganizedMultiPlaneSegmentation $(arg camera1_manager_name)">
+            <remap from="~input" to="$(arg camera1_cloud_topic)" />
+            <rosparam subst_value="true">
+                estimate_normal: $(arg estimate_normal)
+                publish_normal: $(arg publish_normal)
+                max_depth_change_factor: $(arg max_depth_change_factor)
+                normal_smoothing_size: $(arg normal_smoothing_size)
+                depth_dependent_smoothing: $(arg depth_dependent_smoothing)
+                estimation_method: $(arg estimation_method)
+                border_policy_ignore: $(arg border_policy_ignore)
+                min_size: $(arg min_size)
+                angular_threshold: $(arg angular_threshold)
+                max_curvature: $(arg max_curvature)
+                connect_plane_angle_threshold: $(arg connect_plane_angle_threshold)
+                connect_distance_threshold: $(arg connect_distance_threshold)
+                ransac_refine_coefficients: $(arg ransac_refine_coefficients)
+                ransac_refine_outlier_distance_threshold: $(arg ransac_refine_outlier_distance_threshold)
+                min_refined_area_threshold: $(arg min_refined_area_threshold)
+                max_refined_area_threshold: $(arg max_refined_area_threshold)
+            </rosparam>
+            <param name="always_subscribe"      value="$(arg always_subscribe)" />
+            <param name="verbose_connection"    value="$(arg verbose_connection)" />
+        </node>
+        
+        <node if="$(arg visualize_norm)"
+            name="$(arg node_name)_normal_concatenater" pkg="nodelet" type="nodelet"
+            args="load jsk_pcl_utils/NormalConcatenater $(arg camera1_manager_name)">
+            <remap from="~input"  to="$(arg camera1_cloud_topic)" />
+            <remap from="~normal" to="$(arg node_name)/output_normal" />
+        </node>
+    </group>
+    
+    <!-- camera2 -->
+    <group ns="$(arg camera2_name)">
+        <node unless="$(arg use_external_manager)" name="$(arg camera2_manager_name)" pkg="nodelet" type="nodelet" args="manager" />
+        
+        <node name="$(arg node_name)" pkg="nodelet" type="nodelet"
+            args="load jsk_pcl/OrganizedMultiPlaneSegmentation $(arg camera2_manager_name)">
+            <remap from="~input" to="$(arg camera2_cloud_topic)" />
+            <rosparam subst_value="true">
+                estimate_normal: $(arg estimate_normal)
+                publish_normal: $(arg publish_normal)
+                max_depth_change_factor: $(arg max_depth_change_factor)
+                normal_smoothing_size: $(arg normal_smoothing_size)
+                depth_dependent_smoothing: $(arg depth_dependent_smoothing)
+                estimation_method: $(arg estimation_method)
+                border_policy_ignore: $(arg border_policy_ignore)
+                min_size: $(arg min_size)
+                angular_threshold: $(arg angular_threshold)
+                max_curvature: $(arg max_curvature)
+                connect_plane_angle_threshold: $(arg connect_plane_angle_threshold)
+                connect_distance_threshold: $(arg connect_distance_threshold)
+                ransac_refine_coefficients: $(arg ransac_refine_coefficients)
+                ransac_refine_outlier_distance_threshold: $(arg ransac_refine_outlier_distance_threshold)
+                min_refined_area_threshold: $(arg min_refined_area_threshold)
+                max_refined_area_threshold: $(arg max_refined_area_threshold)
+            </rosparam>
+            <param name="always_subscribe"      value="$(arg always_subscribe)" />
+            <param name="verbose_connection"    value="$(arg verbose_connection)" />
+        </node>
+        
+        <node if="$(arg visualize_norm)"
+            name="$(arg node_name)_normal_concatenater" pkg="nodelet" type="nodelet"
+            args="load jsk_pcl_utils/NormalConcatenater $(arg camera2_manager_name)">
+            <remap from="~input"  to="$(arg camera2_cloud_topic)" />
+            <remap from="~normal" to="$(arg node_name)/output_normal" />
+        </node>
+    </group>
+    
+    <!-- camera3 -->
+    <group ns="$(arg camera3_name)">
+        <node unless="$(arg use_external_manager)" name="$(arg camera3_manager_name)" pkg="nodelet" type="nodelet" args="manager" />
+        
+        <node name="$(arg node_name)" pkg="nodelet" type="nodelet"
+            args="load jsk_pcl/OrganizedMultiPlaneSegmentation $(arg camera3_manager_name)">
+            <remap from="~input" to="$(arg camera3_cloud_topic)" />
+            <rosparam subst_value="true">
+                estimate_normal: $(arg estimate_normal)
+                publish_normal: $(arg publish_normal)
+                max_depth_change_factor: $(arg max_depth_change_factor)
+                normal_smoothing_size: $(arg normal_smoothing_size)
+                depth_dependent_smoothing: $(arg depth_dependent_smoothing)
+                estimation_method: $(arg estimation_method)
+                border_policy_ignore: $(arg border_policy_ignore)
+                min_size: $(arg min_size)
+                angular_threshold: $(arg angular_threshold)
+                max_curvature: $(arg max_curvature)
+                connect_plane_angle_threshold: $(arg connect_plane_angle_threshold)
+                connect_distance_threshold: $(arg connect_distance_threshold)
+                ransac_refine_coefficients: $(arg ransac_refine_coefficients)
+                ransac_refine_outlier_distance_threshold: $(arg ransac_refine_outlier_distance_threshold)
+                min_refined_area_threshold: $(arg min_refined_area_threshold)
+                max_refined_area_threshold: $(arg max_refined_area_threshold)
+            </rosparam>
+            <param name="always_subscribe"      value="$(arg always_subscribe)" />
+            <param name="verbose_connection"    value="$(arg verbose_connection)" />
+        </node>
+        
+        <node if="$(arg visualize_norm)"
+            name="$(arg node_name)_normal_concatenater" pkg="nodelet" type="nodelet"
+            args="load jsk_pcl_utils/NormalConcatenater $(arg camera3_manager_name)">
+            <remap from="~input"  to="$(arg camera3_cloud_topic)" />
+            <remap from="~normal" to="$(arg node_name)/output_normal" />
+        </node>
+    </group>
+    
+    <!-- camera4 -->
+    <group ns="$(arg camera4_name)">
+        <node unless="$(arg use_external_manager)" name="$(arg camera4_manager_name)" pkg="nodelet" type="nodelet" args="manager" />
+        
+        <node name="$(arg node_name)" pkg="nodelet" type="nodelet"
+            args="load jsk_pcl/OrganizedMultiPlaneSegmentation $(arg camera4_manager_name)">
+            <remap from="~input" to="$(arg camera4_cloud_topic)" />
+            <rosparam subst_value="true">
+                estimate_normal: $(arg estimate_normal)
+                publish_normal: $(arg publish_normal)
+                max_depth_change_factor: $(arg max_depth_change_factor)
+                normal_smoothing_size: $(arg normal_smoothing_size)
+                depth_dependent_smoothing: $(arg depth_dependent_smoothing)
+                estimation_method: $(arg estimation_method)
+                border_policy_ignore: $(arg border_policy_ignore)
+                min_size: $(arg min_size)
+                angular_threshold: $(arg angular_threshold)
+                max_curvature: $(arg max_curvature)
+                connect_plane_angle_threshold: $(arg connect_plane_angle_threshold)
+                connect_distance_threshold: $(arg connect_distance_threshold)
+                ransac_refine_coefficients: $(arg ransac_refine_coefficients)
+                ransac_refine_outlier_distance_threshold: $(arg ransac_refine_outlier_distance_threshold)
+                min_refined_area_threshold: $(arg min_refined_area_threshold)
+                max_refined_area_threshold: $(arg max_refined_area_threshold)
+            </rosparam>
+            <param name="always_subscribe"      value="$(arg always_subscribe)" />
+            <param name="verbose_connection"    value="$(arg verbose_connection)" />
+        </node>
+        
+        <node if="$(arg visualize_norm)"
+            name="$(arg node_name)_normal_concatenater" pkg="nodelet" type="nodelet"
+            args="load jsk_pcl_utils/NormalConcatenater $(arg camera4_manager_name)">
+            <remap from="~input"  to="$(arg camera4_cloud_topic)" />
+            <remap from="~normal" to="$(arg node_name)/output_normal" />
+        </node>
+    </group>
+    
+</launch>
